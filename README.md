@@ -1,116 +1,141 @@
-# ml_model_for_traiding
+# Crypto Price Direction Predictor
 
-Project Plan: Crypto Price Direction Predictor
-1. Project Structure
+A machine learning-powered API and web interface for predicting cryptocurrency price direction using technical indicators.
+
+## Features
+
+- **Multiple ML Models**: Support for Logistic Regression, Random Forest, XGBoost, LightGBM
+- **REST API**: FastAPI-based endpoints for predictions
+- **Web Interface**: Modern dark-themed UI for interactive predictions
+- **Dashboard**: Analytics and model performance visualization
+- **Batch Predictions**: Process multiple predictions at once
+- **Auto-scaling**: Scaled features for improved model performance
+
+## Project Structure
+
+```
 crypto_predictor/
 ├── app/
-│   ├── __init__.py
-│   ├── main.py              # FastAPI application
+│   ├── main.py              # FastAPI application entry point
 │   ├── api/
-│   │   ├── __init__.py
-│   │   └── routes.py        # API endpoints
+│   │   └── routes.py        # API endpoint definitions
 │   ├── models/
-│   │   ├── __init__.py
-│   │   ├── schemas.py       # Pydantic models
-│   │   └── ml_model.py      # ML model wrapper
+│   │   ├── ml_model.py      # ML model wrapper classes
+│   │   └── schemas.py       # Pydantic validation schemas
 │   ├── services/
-│   │   ├── __init__.py
-│   │   ├── predictor.py     # Prediction logic
+│   │   ├── predictor.py     # Prediction service
 │   │   └── preprocessing.py # Data preprocessing
-│   ├── static/              # CSS, JS files
+│   ├── static/              # CSS and JavaScript
 │   └── templates/           # HTML templates
 ├── ml/
 │   ├── train.py             # Model training script
-│   ├── evaluate.py          # Model evaluation
 │   └── saved_models/        # Trained model files
 ├── data/
-│   └── dataset.csv
-├── notebooks/
-│   └── exploration.ipynb    # EDA notebook
+│   └── dataset.csv          # Training data
 ├── tests/
-│   └── test_api.py
+│   └── test_api.py          # API tests
 ├── requirements.txt
 ├── Dockerfile
 └── README.md
+```
 
-2. Machine Learning Pipeline
-Phase 1: Data Preprocessing
+## Quick Start
 
-Handle missing values (NaN in early rows due to indicator calculations)
-Feature scaling (StandardScaler or MinMaxScaler)
-Train/validation/test split (70/15/15) with time-series awareness
-Feature selection based on correlation analysis
+### 1. Install Dependencies
 
-Phase 2: Model Selection & Training
+```bash
+pip install -r requirements.txt
+```
 
-Baseline models: Logistic Regression, Random Forest
-Advanced models: XGBoost, LightGBM
-Deep Learning option: LSTM or simple neural network
-Hyperparameter tuning with GridSearchCV or Optuna
+### 2. Train a Model
 
-Phase 3: Evaluation Metrics
+```bash
+cd crypto_predictor
+python ml/train.py --data data/dataset.csv --output ml/saved_models
+```
 
-Accuracy, Precision, Recall, F1-Score
-ROC-AUC curve
-Confusion matrix
-Classification report
+### 3. Run the API
 
+```bash
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
 
-3. FastAPI Endpoints
-MethodEndpointDescriptionGET/Web interface (HTML page)GET/healthAPI health checkPOST/predictSingle prediction from featuresPOST/predict/batchBatch predictionsGET/model/infoModel metadata & metricsGET/featuresList required features
+### 4. Access the Application
 
-4. Web Interface Features
+- **Web Interface**: http://localhost:8000
+- **Dashboard**: http://localhost:8000/dashboard
+- **API Documentation**: http://localhost:8000/docs
 
-Input form for technical indicators
-Real-time prediction display (UP/DOWN with probability)
-Historical prediction accuracy chart
-Feature importance visualization
-Model performance metrics dashboard
+## API Endpoints
 
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/health` | Health check |
+| GET | `/api/v1/model/info` | Model information |
+| GET | `/api/v1/features` | Required features list |
+| GET | `/api/v1/model/importance` | Feature importance |
+| POST | `/api/v1/predict` | Single prediction |
+| POST | `/api/v1/predict/batch` | Batch predictions |
+| POST | `/api/v1/model/train` | Train new model |
 
-5. Technology Stack
-ComponentTechnologyML Frameworkscikit-learn, XGBoostAPI FrameworkFastAPIValidationPydanticFrontendJinja2 templates + HTMX or vanilla JSModel SerializationjoblibData Processingpandas, numpyVisualizationPlotly (for interactive charts)
+## Prediction Request Example
 
-6. Implementation Phases
-ML Development
+```python
+import requests
 
-EDA and data cleaning
-Feature engineering
-Model training and selection
-Save best model
+data = {
+    "Open": 45000.0,
+    "High": 46000.0,
+    "Low": 44000.0,
+    "Close": 45500.0,
+    "Volume": 1500000000.0,
+    "RSI": 55.5,
+    "MACD": 150.5,
+    "MACD_Signal": 120.3
+}
 
-API Development
+response = requests.post("http://localhost:8000/api/v1/predict", json=data)
+result = response.json()
 
-FastAPI setup
-Prediction endpoints
-Input validation
-Error handling
+print(f"Prediction: {result['prediction_label']}")
+print(f"Confidence: {result['confidence']:.2%}")
+```
 
-Frontend & Deployment
+## Technical Indicators Used
 
-HTML/CSS interface
-Interactive visualizations
-Docker containerization
-Documentation
+- **Price Data**: Open, High, Low, Close, Volume
+- **Moving Averages**: SMA (7, 25, 99), EMA (7, 25, 99)
+- **MACD**: Line, Signal, Histogram
+- **RSI**: Relative Strength Index
+- **Bollinger Bands**: Upper, Middle, Lower
+- **Stochastic Oscillator**: %K, %D
+- **Others**: ATR, ADX, CCI, Williams %R, ROC, MFI, CMF, OBV, VWAP
+- **Ichimoku Cloud**: Tenkan-sen, Kijun-sen, Senkou Spans, Chikou Span
 
+## Docker Deployment
 
-7. Key Considerations
-For Crypto Data:
+```bash
+# Build image
+docker build -t crypto-predictor .
 
-Time-series split (not random) to prevent data leakage
-Handle class imbalance if present
-Consider feature lag to avoid look-ahead bias
+# Run container
+docker run -p 8000:8000 crypto-predictor
+```
 
-For Production:
+## Model Performance
 
-Model versioning
-Logging predictions
-Rate limiting
-Input sanitization
+The model is trained using time-series aware splitting to prevent data leakage:
+- Training: 70%
+- Validation: 15%
+- Test: 15%
 
+Typical performance metrics (varies by model):
+- Accuracy: 52-58%
+- F1 Score: 50-56%
+- ROC-AUC: 52-60%
 
-Would you like me to start implementing this? I can begin with:
+> Note: Cryptocurrency price prediction is inherently challenging. These models should be used for research/educational purposes only.
 
-Data exploration & model training — analyze the dataset and train models
-Full implementation — build the complete project with FastAPI and frontend
-Specific component — focus on a particular part (ML only, API only, etc.)
+## License
+
+MIT License

@@ -1,10 +1,35 @@
-fastapi
-uvicorn
-pydantic
-scikit-learn
-xgboost
-pandas
-numpy
-plotly
-jinja2
-joblib
+# Machine Learning
+numpy>=1.24.0
+pandas>=2.0.0
+scikit-learn>=1.3.0
+xgboost>=2.0.0
+lightgbm>=4.0.0
+optuna>=3.4.0
+joblib>=1.3.0
+
+# API Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+
+# Validation & Serialization
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# Templating & Frontend
+jinja2>=3.1.2
+aiofiles>=23.2.0
+
+# Data Visualization
+plotly>=5.18.0
+matplotlib>=3.8.0
+seaborn>=0.13.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+httpx>=0.25.0
+
+# Utilities
+python-dotenv>=1.0.0
+loguru>=0.7.0

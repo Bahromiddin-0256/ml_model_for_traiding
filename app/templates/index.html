@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Predictor | ML-Powered Price Direction</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="grain-overlay"></div>
+    
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="brand-icon">◈</span>
+            <span class="brand-text">CryptoPredictor</span>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-link active">Predict</a>
+            <a href="/dashboard" class="nav-link">Dashboard</a>
+            <a href="/docs" class="nav-link">API Docs</a>
+        </div>
+        <div class="nav-status">
+            {% if model_loaded %}
+            <span class="status-badge status-online">Model Active</span>
+            {% else %}
+            <span class="status-badge status-offline">No Model</span>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="hero">
+            <h1 class="hero-title">
+                <span class="title-accent">ML-Powered</span>
+                Crypto Price Prediction
+            </h1>
+            <p class="hero-subtitle">
+                Enter technical indicators to predict the next price direction using machine learning
+            </p>
+        </header>
+
+        {% if not model_loaded %}
+        <div class="alert alert-warning">
+            <span class="alert-icon">⚠</span>
+            <div class="alert-content">
+                <strong>No model loaded.</strong> 
+                <p>Train a model first using the API endpoint or the training script.</p>
+                <code>python ml/train.py --data data/dataset.csv</code>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="main-grid">
+            <section class="card prediction-form-card">
+                <div class="card-header">
+                    <h2 class="card-title">Input Features</h2>
+                    <button type="button" class="btn btn-ghost" id="fillSampleBtn">
+                        Fill Sample Data
+                    </button>
+                </div>
+                
+                <form id="predictionForm" class="prediction-form">
+                    <div class="form-section">
+                        <h3 class="section-title">Price Data</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="Open">Open</label>
+                                <input type="number" id="Open" name="Open" step="any" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="High">High</label>
+                                <input type="number" id="High" name="High" step="any" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="Low">Low</label>
+                                <input type="number" id="Low" name="Low" step="any" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="Close">Close</label>
+                                <input type="number" id="Close" name="Close" step="any" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="Volume">Volume</label>
+                                <input type="number" id="Volume" name="Volume" step="any" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title">Moving Averages</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="SMA_7">SMA 7</label>
+                                <input type="number" id="SMA_7" name="SMA_7" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="SMA_25">SMA 25</label>
+                                <input type="number" id="SMA_25" name="SMA_25" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="SMA_99">SMA 99</label>
+                                <input type="number" id="SMA_99" name="SMA_99" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="EMA_7">EMA 7</label>
+                                <input type="number" id="EMA_7" name="EMA_7" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="EMA_25">EMA 25</label>
+                                <input type="number" id="EMA_25" name="EMA_25" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="EMA_99">EMA 99</label>
+                                <input type="number" id="EMA_99" name="EMA_99" step="any">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title">Momentum Indicators</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="RSI">RSI</label>
+                                <input type="number" id="RSI" name="RSI" step="any" min="0" max="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="MACD">MACD</label>
+                                <input type="number" id="MACD" name="MACD" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="MACD_Signal">MACD Signal</label>
+                                <input type="number" id="MACD_Signal" name="MACD_Signal" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="MACD_Hist">MACD Hist</label>
+                                <input type="number" id="MACD_Hist" name="MACD_Hist" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="Stoch_K">Stoch %K</label>
+                                <input type="number" id="Stoch_K" name="Stoch_K" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="Stoch_D">Stoch %D</label>
+                                <input type="number" id="Stoch_D" name="Stoch_D" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="ADX">ADX</label>
+                                <input type="number" id="ADX" name="ADX" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="Williams_R">Williams %R</label>
+                                <input type="number" id="Williams_R" name="Williams_R" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="ROC">ROC</label>
+                                <input type="number" id="ROC" name="ROC" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="CCI">CCI</label>
+                                <input type="number" id="CCI" name="CCI" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="MFI">MFI</label>
+                                <input type="number" id="MFI" name="MFI" step="any" min="0" max="100">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title">Volatility & Bands</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="BB_Upper">BB Upper</label>
+                                <input type="number" id="BB_Upper" name="BB_Upper" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="BB_Middle">BB Middle</label>
+                                <input type="number" id="BB_Middle" name="BB_Middle" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="BB_Lower">BB Lower</label>
+                                <input type="number" id="BB_Lower" name="BB_Lower" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="ATR">ATR</label>
+                                <input type="number" id="ATR" name="ATR" step="any">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title">Volume Indicators</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="OBV">OBV</label>
+                                <input type="number" id="OBV" name="OBV" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="CMF">CMF</label>
+                                <input type="number" id="CMF" name="CMF" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="VWAP">VWAP</label>
+                                <input type="number" id="VWAP" name="VWAP" step="any">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="section-title">Ichimoku Cloud</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="Ichimoku_Tenkan">Tenkan-sen</label>
+                                <input type="number" id="Ichimoku_Tenkan" name="Ichimoku_Tenkan" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="Ichimoku_Kijun">Kijun-sen</label>
+                                <input type="number" id="Ichimoku_Kijun" name="Ichimoku_Kijun" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="Ichimoku_SenkouA">Senkou A</label>
+                                <input type="number" id="Ichimoku_SenkouA" name="Ichimoku_SenkouA" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="Ichimoku_SenkouB">Senkou B</label>
+                                <input type="number" id="Ichimoku_SenkouB" name="Ichimoku_SenkouB" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="Ichimoku_Chikou">Chikou</label>
+                                <input type="number" id="Ichimoku_Chikou" name="Ichimoku_Chikou" step="any">
+                            </div>
+                            <div class="form-group">
+                                <label for="Parabolic_SAR">Parabolic SAR</label>
+                                <input type="number" id="Parabolic_SAR" name="Parabolic_SAR" step="any">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg" {% if not model_loaded %}disabled{% endif %}>
+                        <span class="btn-icon">◈</span>
+                        Predict Direction
+                    </button>
+                </form>
+            </section>
+
+            <section class="card result-card">
+                <div class="card-header">
+                    <h2 class="card-title">Prediction Result</h2>
+                </div>
+                
+                <div id="resultContainer" class="result-container">
+                    <div class="result-placeholder">
+                        <div class="placeholder-icon">◇</div>
+                        <p>Enter features and click predict to see results</p>
+                    </div>
+                </div>
+
+                {% if model_info %}
+                <div class="model-info-panel">
+                    <h3 class="panel-title">Model Information</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Type</span>
+                            <span class="info-value">{{ model_info.model_type }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Features</span>
+                            <span class="info-value">{{ model_info.n_features or 'N/A' }}</span>
+                        </div>
+                        {% if model_info.metrics and model_info.metrics.test %}
+                        <div class="info-item">
+                            <span class="info-label">Test Accuracy</span>
+                            <span class="info-value">{{ "%.2f"|format(model_info.metrics.test.accuracy * 100) }}%</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">F1 Score</span>
+                            <span class="info-value">{{ "%.2f"|format(model_info.metrics.test.f1_score * 100) }}%</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>Built with FastAPI & Machine Learning | <a href="/docs">API Documentation</a></p>
+    </footer>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
